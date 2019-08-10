@@ -5,10 +5,13 @@ from math import sin, cos, radians
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
+img_space_suttle = arcade.load_texture('img/space-ship.jpg')
+
 def get_distanse(ob1, ob2):
     dx = ob2.x - ob1.x
     dy = ob2.y - ob1.y
-    return  (dx ** 2 + dy ** 2) ** 0.5
+
+    return (dx ** 2 + dy ** 2) ** 0.5
 
 class Apple:
     def __init__(self):
@@ -22,7 +25,7 @@ class Apple:
 
     def is_collision(self, hero):
         r = get_distanse(self, hero)
-        r2 = self.size + hero.size
+        r2 = self.size / 2 + hero.size
         return r2 >= r
 
 
@@ -32,29 +35,32 @@ class Hero:
         self.y = 950
         self.dir = 0
         self.speed = 2
-        self.size = 10
+        self.size = 60
 
         self.color = arcade.color.HEART_GOLD
 
     def draw(self):
-        dx = 80 * sin(radians(self.dir))
-        dy = 80 * cos(radians(self.dir))
-        arcade.draw_circle_filled(self.x, self.y, self.size, self.color)
-        arcade.draw_line(self.x, self.y, self.x + 0.3 * dx, self.y + 0.3 * dy, [255,255,255], 4)
+        arcade.draw_texture_rectangle(self.x, self.y,
+                                      self.size, self.size,
+                                      img_space_suttle, - self.dir)
+        # dx = 80 * sin(radians(self.dir))
+        # dy = 80 * cos(radians(self.dir))
+        # arcade.draw_circle_filled(self.x, self.y, self.size, self.color)
+        # arcade.draw_line(self.x, self.y, self.x + 0.3 * dx, self.y + 0.3 * dy, [255, 255, 255], 4)
 
     def speed_up(self):
-        if self.speed < 15:
+        if self.speed < 3:
             self.speed += 1
 
     def speed_down(self):
-        if self.speed > -15:
+        if self.speed > -3:
             self.speed -= 1
 
     def turn_left(self):
-        self.dir -= 10
+        self.dir -= 19
 
     def turn_right(self):
-        self.dir += 10
+        self.dir += 19
 
     def move(self, dir):
         dx = self.speed * sin(radians(self.dir))
@@ -86,7 +92,7 @@ class MyGame(arcade.Window):
         self.hero = Hero()
         self.apple_list = []
         self.state = 'run'
-        for i in range(randint(20, 30)):
+        for i in range(randint(20, 20)):
             self.apple_list.append(Apple())
         pass
 
