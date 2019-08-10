@@ -5,16 +5,11 @@ from math import sin, cos, radians
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
-
-
-
-
 img_space_suttle = arcade.load_texture('img/rokets.png')
 
 def get_distanse(ob1, ob2):
     dx = ob2.x - ob1.x
     dy = ob2.y - ob1.y
-
     return (dx ** 2 + dy ** 2) ** 0.5
 
 class Apple:
@@ -32,8 +27,6 @@ class Apple:
         r2 = self.size / 2 + hero.size
         return r2 >= r
 
-
-
 class Hero:
     def __init__(self):
         self.x = 1850
@@ -42,7 +35,6 @@ class Hero:
         self.speed = 2
         self.speed_rotation = 0
         self.size = 60
-
         self.color = arcade.color.HEART_GOLD
 
     def draw(self):
@@ -84,19 +76,11 @@ class Hero:
         self.x += dx
         self.y += dy
 
-
-
-pass
-
-
 class MyGame(arcade.Window):
     """ Главный класс приложения. """
-
     def __init__(self, width, height):
         super().__init__(width, height)
-
         arcade.set_background_color(arcade.color.BLACK)
-
 
     def setup(self):
         # Настроить игру здесь
@@ -105,7 +89,6 @@ class MyGame(arcade.Window):
         self.state = 'run'
         for i in range(randint(20, 20)):
             self.apple_list.append(Apple())
-        pass
 
     def on_draw(self):
         """ Отрендерить этот экран. """
@@ -130,10 +113,6 @@ class MyGame(arcade.Window):
             for apple in self.apple_list:
                 if apple.is_collision(self.hero):
                     self.state = 'game_over'
-
-                # arcade.draw_text('Иди в АЭРО!!!', 122, 400, [200, 200, 200], 25, 300)
-
-        pass
 
     def on_key_press(self, symbol: int, modifiers: int):
         if self.state == 'run':
@@ -160,13 +139,6 @@ def main():
     game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT)
     game.setup()
     arcade.run()
-    #arcade.schedule(on_draw, 1 / 80)
-
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
