@@ -1,11 +1,16 @@
 import arcade
-from random import  randint
+from random import  randint, choice
 from math import sin, cos, radians
 
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
 img_space_suttle = arcade.load_texture('img/rokets.png')
+img_planet_list = []
+for i in range(4):
+    filename = 'img/planet{}.png'.format(i + 1)
+    img_planet_list.append(arcade.load_texture(filename))
+
 
 def get_distanse(ob1, ob2):
     dx = ob2.x - ob1.x
@@ -14,13 +19,15 @@ def get_distanse(ob1, ob2):
 
 class Apple:
     def __init__(self):
-        self.size = randint(5,30)
+        self.size = randint(60, 100)
         self.x = randint(self.size, SCREEN_WIDTH - self.size)
         self.y = randint(self.size, SCREEN_HEIGHT - self.size)
         self.color = arcade.color.BLUE
+        self.img = choice(img_planet_list)
 
     def draw(self):
-        arcade.draw_circle_filled(self.x, self.y, self.size, self.color)
+        # arcade.draw_circle_filled(self.x, self.y, self.size, self.color)
+        arcade.draw_texture_rectangle(self.x, self.y, self.size, self.size, self.img)
 
     def is_collision(self, hero):
         r = get_distanse(self, hero)
@@ -76,6 +83,12 @@ class Hero:
         self.x += dx
         self.y += dy
 
+    def is_crash(self):
+        out_x = not(0 < self.x < SCREEN_WIDTH)
+        out_y = not(0 < self.y < SCREEN_HEIGHT)
+        return out_x or out_y
+
+
 class MyGame(arcade.Window):
     """ Главный класс приложения. """
     def __init__(self, width, height):
@@ -109,9 +122,11 @@ class MyGame(arcade.Window):
     def update(self, delta_time):
         """ Здесь вся игровая логика и логика перемещения."""
         if self.state == 'run':
-            self.hero.move('')
+            self.hero.move()
+            if self.hero.is_crash():
+                self.state = 'game_over'
             for apple in self.apple_list:
-                if apple.is_collision(self.hero):
+                if apple.is_collision(self.hero) :
                     self.state = 'game_over'
 
     def on_key_press(self, symbol: int, modifiers: int):
