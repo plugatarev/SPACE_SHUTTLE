@@ -5,7 +5,11 @@ from math import sin, cos, radians
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
-img_space_suttle = arcade.load_texture('img/space-ship.jpg')
+
+
+
+
+img_space_suttle = arcade.load_texture('img/rokets.png')
 
 def get_distanse(ob1, ob2):
     dx = ob2.x - ob1.x
@@ -29,19 +33,21 @@ class Apple:
         return r2 >= r
 
 
+
 class Hero:
     def __init__(self):
         self.x = 1850
         self.y = 950
         self.dir = 0
         self.speed = 2
+        self.speed_rotation = 0
         self.size = 60
 
         self.color = arcade.color.HEART_GOLD
 
     def draw(self):
         arcade.draw_texture_rectangle(self.x, self.y,
-                                      self.size, self.size,
+                                      self.size * 0.8, self.size * 1.5,
                                       img_space_suttle, - self.dir)
         # dx = 80 * sin(radians(self.dir))
         # dy = 80 * cos(radians(self.dir))
@@ -52,29 +58,34 @@ class Hero:
         if self.speed < 3:
             self.speed += 1
 
+    def rotation_left(self):
+        self.speed_rotation = -3
+
+    def rotation_right(self):
+        self.speed_rotation = 3
+
+    def rotation_stop(self):
+        self.speed_rotation = 0
+
     def speed_down(self):
         if self.speed > -3:
             self.speed -= 1
 
     def turn_left(self):
-        self.dir -= 19
+        self.dir -= 10
 
     def turn_right(self):
-        self.dir += 19
+        self.dir += 10
 
-    def move(self, dir):
+    def move(self):
+        self.dir += self.speed_rotation
         dx = self.speed * sin(radians(self.dir))
         dy = self.speed * cos(radians(self.dir))
         self.x += dx
         self.y += dy
-        # if dir == 'l':
-        #     self.x -= 10
-        # elif dir == 'r':
-        #     self.x += 10
-        # elif dir == 'u':
-        #     self.y += 10
-        # elif dir == 'd':
-        #     self.y -= 10
+
+
+
 pass
 
 
@@ -110,7 +121,7 @@ class MyGame(arcade.Window):
             self.hero.draw()
             for apple in self.apple_list:
                 apple.draw()
-            arcade.draw_text('Иди учись в АЭРО!!!', 200, 200, [200, 200, 200], 32)
+            arcade.draw_text('Иди учись в АЭРО!!!', 500, 500, [200, 200, 200], 100)
 
     def update(self, delta_time):
         """ Здесь вся игровая логика и логика перемещения."""
@@ -127,15 +138,22 @@ class MyGame(arcade.Window):
     def on_key_press(self, symbol: int, modifiers: int):
         if self.state == 'run':
             if symbol == arcade.key.LEFT:
-                self.hero.move('l')
-                self.hero.turn_left()
+                self.hero.move()
+                self.hero.rotation_left()
             elif symbol == arcade.key.RIGHT:
-                self.hero.turn_right()
-                self.hero.move('r')
+                self.hero.rotation_right()
+                self.hero.move()
             elif symbol == arcade.key.UP:
                 self.hero.speed_up()
             elif symbol == arcade.key.DOWN:
                 self.hero.speed_down()
+
+    def on_key_release(self, symbol: int, modifiers: int):
+        if self.state == 'run':
+            if symbol == arcade.key.LEFT:
+                self.hero.rotation_stop()
+            elif symbol == arcade.key.RIGHT:
+                self.hero.rotation_stop()
 
 def main():
     global IN_GAME
