@@ -5,11 +5,11 @@ from math import sin, cos, radians
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
-img_planet = arcade.load_texture('img/planet.jpg')
+img_planet = arcade.load_texture('img/planet_bc.png')
 img_space_suttle = arcade.load_texture('img/rokets.png')
 img_planet_list = []
 for i in range(4):
-    filename = 'img/planet{}.jpg'.format(i + 1)
+    filename = 'img/planet{}.png'.format(i + 1)
     img_planet_list.append(arcade.load_texture(filename))
 
 
@@ -41,7 +41,7 @@ class Planet:
 
     def is_collision(self, hero):
         r = get_distanse(self, hero)
-        r2 = self.size / 2 + hero.size
+        r2 = self.size / 3 + hero.size / 2
         return r2 >= r
 
 class Hero:
