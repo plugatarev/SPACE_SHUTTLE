@@ -1,10 +1,11 @@
 import arcade
-from random import  randint, choice
+from random import  randint, choice, random
 from math import sin, cos, radians
 
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
+img_background = arcade.load_texture('img/background.jpg')
 img_planet = arcade.load_texture('img/planet_bc.png')
 img_space_suttle = arcade.load_texture('img/rokets.png')
 img_planet_list = []
@@ -32,12 +33,20 @@ class Planet:
         self.size = randint(60, 100)
         self.x = randint(self.size, SCREEN_WIDTH - self.size)
         self.y = randint(self.size, SCREEN_HEIGHT - self.size)
+        self.speed = randint(0, 10) / 40
+        self.dir = randint(0, 359)
         self.color = arcade.color.BLUE
         self.img = choice(img_planet_list)
 
     def draw(self):
         # arcade.draw_circle_filled(self.x, self.y, self.size, self.color)
         arcade.draw_texture_rectangle(self.x, self.y, self.size, self.size, self.img)
+
+    def move(self):
+        dx = self.speed * sin(radians(self.dir))
+        dy = self.speed * cos(radians(self.dir))
+        self.x += dx
+        self.y += dy
 
     def is_collision(self, hero):
         r = get_distanse(self, hero)
@@ -48,9 +57,11 @@ class Hero:
     def __init__(self):
         self.x = 1850
         self.y = 950
-        self.dir = 0
+        self.dir = 210
         self.speed = 2
         self.speed_rotation = 0
+        self.fuel = 100
+        self.fuel_prec = 0.1
         self.size = 60
         self.color = arcade.color.HEART_GOLD
 
@@ -63,28 +74,39 @@ class Hero:
         # arcade.draw_circle_filled(self.x, self.y, self.size, self.color)
         # arcade.draw_line(self.x, self.y, self.x + 0.3 * dx, self.y + 0.3 * dy, [255, 255, 255], 4)
 
+    def update(self):
+        if self.fuel >= self.fuel_prec:
+            self.fuel -= self.fuel_prec
+        else:
+            self.speed_rotation = 0
+
+
     def speed_up(self):
-        if self.speed < 3:
-            self.speed += 1
+        if self.speed < 4 and self.fuel > 0:
+            self.speed += 0.25
+
+    def speed_down(self):
+        if self.speed >= 1 and self.fuel > 0:
+            self.speed -= 0.4
 
     def rotation_left(self):
-        self.speed_rotation = -3
+        if self.fuel > 0:
+            self.speed_rotation = -0.5
 
     def rotation_right(self):
-        self.speed_rotation = 3
+        if self.fuel > 0:
+            self.speed_rotation = 0.5
 
     def rotation_stop(self):
         self.speed_rotation = 0
 
-    def speed_down(self):
-        if self.speed > -3:
-            self.speed -= 1
-
     def turn_left(self):
-        self.dir -= 10
+        if self.fuel > 0:
+            self.dir -= 10
 
     def turn_right(self):
-        self.dir += 10
+        if self.fuel > 0:
+            self.dir += 10
 
     def move(self):
         self.dir += self.speed_rotation
@@ -110,40 +132,68 @@ class MyGame(arcade.Window):
         self.hero = Hero()
         self.planet = Planet()
         self.planet.img = img_planet
-        self.apple_list = []
+        self.planet_list = []
         self.state = 'run'
-        for i in range(randint(20, 20)):
-            self.apple_list.append(Planet())
+        self.step = 0
+        self.telemetry = ''
+        for i in range(randint(20, 30)):
+            self.planet_list.append(Planet())
+
+    def draw_telemetry(self):
+        if self.step % 20 == 0:
+            self.telemetry = 'fuel: {} %\n'.format(round(self.hero.fuel, 1)) + \
+                             'speed: {} m/s\n'.format(round(self.hero.speed * 987, 1)) + \
+                             'X: {} m\n'.format(round(self.hero.x, 1))
+
+        arcade.draw_text(self.telemetry, 10, SCREEN_HEIGHT - 100
+                         , [200, 200, 200], 30,
+                         width=1300, align="left", anchor_x="left", anchor_y="center")
+
 
     def on_draw(self):
         """ Отрендерить этот экран. """
         arcade.start_render()
         # Здесь код рисунка
+        arcade.draw_texture_rectangle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT, img_background)
         if self.state == 'run':
             self.hero.draw()
-            for apple in self.apple_list:
+            for apple in self.planet_list:
                 apple.draw()
             self.planet.draw()
+            self.draw_telemetry()
         elif self.state == 'pause':
             pass
         elif self.state == 'win':
-            arcade.draw_text('Победа вместо обеда!!!', 500, 500, [200, 200, 200], 100)
+            for apple in self.planet_list:
+                apple.draw()
+            self.planet.draw()
+            arcade.draw_text('Победа вместо обеда!!!',
+                             SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2
+                             , [200, 200, 200], 100,
+                             width=1300, align="center", anchor_x="center", anchor_y="center")
+
         elif self.state == 'game_over':
             self.hero.draw()
-            for apple in self.apple_list:
+            self.planet.draw()
+            for apple in self.planet_list:
                 apple.draw()
-            arcade.draw_text('Иди учись в АЭРО!!!', 500, 500, [200, 200, 200], 100)
+            arcade.draw_text('Иди учись в АЭРО!!!', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2
+                             , [200, 200, 200], 100,
+                             width=1200, align="center", anchor_x="center", anchor_y="center")
 
     def update(self, delta_time):
         """ Здесь вся игровая логика и логика перемещения."""
         if self.state == 'run':
+            self.step += 1
             self.hero.move()
+            self.hero.update()
             if self.hero.is_crash():
                 self.state = 'game_over'
             if self.planet.is_collision(self.hero):
                 self.state = 'win'
-            for apple in self.apple_list:
-                if apple.is_collision(self.hero) :
+            for planet in self.planet_list:
+                planet.move()
+                if planet.is_collision(self.hero) :
                     self.state = 'game_over'
 
 
