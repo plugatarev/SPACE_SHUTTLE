@@ -5,10 +5,11 @@ from math import sin, cos, radians
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
+img_planet = arcade.load_texture('img/planet.jpg')
 img_space_suttle = arcade.load_texture('img/rokets.png')
 img_planet_list = []
 for i in range(4):
-    filename = 'img/planet{}.png'.format(i + 1)
+    filename = 'img/planet{}.jpg'.format(i + 1)
     img_planet_list.append(arcade.load_texture(filename))
 
 
@@ -17,7 +18,16 @@ def get_distanse(ob1, ob2):
     dy = ob2.y - ob1.y
     return (dx ** 2 + dy ** 2) ** 0.5
 
-class Apple:
+# class Background:
+#     def __init__(self):
+#         # self.img =
+#         pass
+#
+#     def draw(self):
+#
+
+
+class Planet:
     def __init__(self):
         self.size = randint(60, 100)
         self.x = randint(self.size, SCREEN_WIDTH - self.size)
@@ -98,10 +108,12 @@ class MyGame(arcade.Window):
     def setup(self):
         # Настроить игру здесь
         self.hero = Hero()
+        self.planet = Planet()
+        self.planet.img = img_planet
         self.apple_list = []
         self.state = 'run'
         for i in range(randint(20, 20)):
-            self.apple_list.append(Apple())
+            self.apple_list.append(Planet())
 
     def on_draw(self):
         """ Отрендерить этот экран. """
@@ -111,8 +123,11 @@ class MyGame(arcade.Window):
             self.hero.draw()
             for apple in self.apple_list:
                 apple.draw()
+            self.planet.draw()
         elif self.state == 'pause':
             pass
+        elif self.state == 'win':
+            arcade.draw_text('Победа вместо обеда!!!', 500, 500, [200, 200, 200], 100)
         elif self.state == 'game_over':
             self.hero.draw()
             for apple in self.apple_list:
@@ -125,9 +140,12 @@ class MyGame(arcade.Window):
             self.hero.move()
             if self.hero.is_crash():
                 self.state = 'game_over'
+            if self.planet.is_collision(self.hero):
+                self.state = 'win'
             for apple in self.apple_list:
                 if apple.is_collision(self.hero) :
                     self.state = 'game_over'
+
 
     def on_key_press(self, symbol: int, modifiers: int):
         if self.state == 'run':
